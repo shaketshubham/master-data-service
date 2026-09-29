@@ -1,6 +1,7 @@
 global:
-  masterDataHostname: 'master-data.{{ .Release.Namespace }}.openg2p.org'
-  masterDataUiHostname: 'master-data-ui.{{ .Release.Namespace }}.openg2p.org'
+  envDomain: '{{ .Release.Namespace }}.openg2p.org'
+  masterDataHostname: 'master-data.{{ tpl .Values.global.envDomain $ }}'
+  masterDataUiHostname: 'master-data-ui.{{ tpl .Values.global.envDomain $ }}'
   # Database
   postgresqlHost: commons-postgresql
   # Underscores to follow postgresql conventions
@@ -17,17 +18,18 @@ global:
   # Must match the Keycloak client / staff-portal application mnemonic
   # (master-data) that carries MASTER_DATA_ADMIN for CRUD.
   authClientId: master-data
-  # K8s Secret holding the OIDC client password (same name as clientId when
+  # K8s Secret holding the OIDC client password (same name as clientId whenls
   # provisioned by keycloak-init). Used by the iam-register Job for
   # client_credentials against Keycloak.
   authClientSecret: master-data
   authClientSecretKey: client_secret
-  keycloakBaseUrl: 'https://keycloak.{{ .Release.Namespace }}.openg2p.org'
+  keycloakBaseUrl: 'https://keycloak.{{ tpl .Values.global.envDomain $ }}'
   keycloakRealm: staff
   keycloakIssuerUrl: '{{ tpl .Values.global.keycloakBaseUrl $ }}/realms/{{ tpl .Values.global.keycloakRealm $ }}'
   # Internal IAM staff-portal-api URL (self-registration + permission resolution).
   iamServiceUrl: 'http://commons-services-iam-staff-portal-api'
   authProviderApiUrl: '{{ tpl .Values.global.iamServiceUrl $ }}'
+  iamPublicUrl: 'https://staff-iam.{{ tpl .Values.global.envDomain $ }}'
   # Same Redis as IAM staff-portal-api (refresh-token store).
   redisInstallationName: 'commons-redis'
   # Double-submit CSRF on state-changing master-data-api requests.
@@ -316,7 +318,7 @@ masterDataUi:
         credentialName: ""
 
   # Browser-facing IAM URL (Master Data UI login providers)
-  iamPublicUrl: 'https://staff-iam.{{ .Release.Namespace }}.openg2p.org'
+  iamPublicUrl: '{{ tpl .Values.global.iamPublicUrl $ }}'
 
   envVars:
     BACKEND_URL: 'http://commons-services-master-data-api'
@@ -324,7 +326,7 @@ masterDataUi:
     IAM_URL: '{{ tpl .Values.iamPublicUrl $ }}'
     LOGIN_PROVIDER_ID: "1"
     APPLICATION_MNEMONIC: "master-data"
-    COOKIE_DOMAIN: '.{{ .Release.Namespace }}.openg2p.org'
+    COOKIE_DOMAIN: '.{{ tpl .Values.global.envDomain $ }}'
     NODE_ENV: production
 
   envVarsFrom: {}
